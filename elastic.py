@@ -5,14 +5,18 @@ import elasticsearch
 import elasticsearch_dsl as dsl
 from elasticsearch import Elasticsearch
 
+from utils import *
+
+
 client = Elasticsearch('95.213.38.6:9200')
 
-def upload_file(src, index, doc):
+
+def upload_file(src, index, doc, fn):
     with open(src, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     for i, content in data.items():
-        client.index(index=index, doc_type=doc, id=i, body=normalize_objects(content))
+        client.index(index=index, doc_type=doc, id=i, body=fn(content))
         print('indexed', i)
 
 
@@ -44,6 +48,19 @@ def normalize_objects(content):
     return obj
 
 
+def normalize_building(content):
+    return {
+        'address': maybe_get(content, 'adress'),
+        'img': maybe_get(content, 'img'),
+        'name': maybe_get(content, 'name'),
+        'tel': maybe_get(content, 'tel'),
+        'brief': maybe_get(content, 'brief'),
+        'coords': maybe_get(content, 'yamapcoords'),
+        'audiog': maybe_get(content, 'audiog'),
+        'svg': maybe_get(content, 'img'),
+        'path': maybe_get(content, 'path')
+    }
+
 def as_Q(field, query):
     return dsl.Q('match', **{field: {'query': query, 'fuzziness': 1}})
 
@@ -69,7 +86,7 @@ def search_objects(query):
 
 
 def index_things():
-    upload_file('/home/roman/Downloads/MuseumData/objects.json', index='objects', doc='object')
+    upload_file('/home/roman/Downloads/MuseumData/objects.json', index='objects', doc='object', fn=normalize_objects)
 
 
 def sample_search(text='картины Пискассо'):
@@ -78,5 +95,6 @@ def sample_search(text='картины Пискассо'):
 
 
 if __name__ == '__main__':
-    sample_search()
+    # sample_search()
+    upload_file('/home/roman/Downloads/MuseumData/buildings.json', index='bld_tst', doc='building', fn=normalize_building)
 
