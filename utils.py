@@ -20,3 +20,10 @@ def maybe_get(d, key):
         return val['1']
     else:
         return val
+
+
+def normalize_coord(coords):
+    if isinstance(coords, str):
+        if isinstance(coords, str) and coords.count(','):
+            coords = ','.join(coords.split(',')[-2:])
+    return coords

@@ -3,8 +3,11 @@ from flask import Flask, request, abort, jsonify
 import elastic
 from data_store import buildings
 
+from utils import normalize_coord
+
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+
 
 @app.route('/ping')
 def ping():
@@ -20,6 +23,8 @@ def search():
         return jsonify(elastic.search_objects(query))
     elif entity == 'building':
         return jsonify(elastic.search_buildings(query))
+    elif entity == 'event':
+        return jsonify(elastic.search_events(query))
     else:
         return abort(400)
 
@@ -58,10 +63,24 @@ def where_is_it():
         res['object'] = obj
         res['building'] = buildings.find_building(bld_id).dict()
         if 'coords' in res['building']:
-            res['coords'] = res['building']['coords']
+            res['coords'] = normalize_coord(res['building']['coords'])
         return jsonify(res)
 
 
-if __name__ == '__main__':
+@app.route('/find_event')
+def find_event():
+    query = request.args["query"]
+    found_events = elastic.search_events(query)
+    for event in found_events:
+        bld = event.get('building')
+        coords = normalize_coord(bld.get('coords'))
+        resp = event.copy()
+        resp['desc'] = resp.get('text')
+        resp['text'] = f'Найдено событие: {resp["name"]}. Место проведения: {bld["name"]}.'
+        resp['coords'] = coords
+        return jsonify(resp)
+    abort(404)
 
+
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8888)

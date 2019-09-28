@@ -6,7 +6,7 @@ import elasticsearch_dsl as dsl
 from elasticsearch import Elasticsearch
 
 from utils import *
-
+import data_store.buildings
 
 client = Elasticsearch('95.213.38.6:9200')
 
@@ -62,6 +62,26 @@ def normalize_building(content):
     }
 
 
+def normalize_event(content):
+    struct = {
+        'name': maybe_get(content, 'name'),
+        'path': maybe_get(content, 'path'),
+        'date': maybe_get(content, 'dateBegin'),
+        'price': maybe_get(content, 'price'),
+    }
+    if 'circ_img' in content and 'id02' in content['circ_img']:
+        struct['img'] = content['circ_img']['id02']
+    elif 'headimg' in content:
+        struct['img'] = maybe_get(content, 'headimg')
+    buildings = maybe_get(content, 'building')
+    if isinstance(buildings, dict):
+        buildings = next(iter(buildings.items()))[1]
+    if buildings:
+        bld = data_store.buildings.find_building(buildings)
+        struct['building'] = bld.dict()
+    return struct
+
+
 def as_Q(field, query, fuzziness=1):
     return dsl.Q('match', **{field: {'query': query, 'fuzziness': fuzziness}})
 
@@ -97,9 +117,15 @@ def search_buildings(query):
     return search(query, index='buildings', fields=('name', 'brief', 'address'))
 
 
+def search_events(query):
+    return search(query, index='events', fields=('name', 'text'))
+
+
 def index_things():
     upload_file('/home/roman/Downloads/MuseumData/objects.json', index='objects', doc='object', fn=normalize_objects)
     upload_file('/home/roman/Downloads/MuseumData/buildings.json', index='buildings', doc='building', fn=normalize_building)
+    upload_file('/home/roman/Downloads/MuseumData/events.json', index='events', doc='event', fn=normalize_event)
+
 
 
 def sample_search(text='картины Пискассо'):
@@ -108,7 +134,8 @@ def sample_search(text='картины Пискассо'):
 
 
 if __name__ == '__main__':
-    print(sample_search())
+    # print(sample_search())
+    print(search('египетская империя', index='events', fields=('name', 'text')))
     # print(len(search_buildings('главное здание')))
     # index_things()
 
