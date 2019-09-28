@@ -10,6 +10,8 @@ class Hall(NamedTuple):
     id: str
     name: str
 
+    def dict(self):
+        return self._asdict()
 
 class Floor(NamedTuple):
     id: int
@@ -136,13 +138,13 @@ def find_human_readable(id):
         return None
 
     if len(out) == 1:
-        return {'text': f'Вы находитесь в {out[0].name}, адрес: {out[0].brief}', 'ref': out[0].dict()}
+        return {'text': f'{out[0].name}, адрес: {out[0].brief}', 'ref': out[0].dict()}
 
     if len(out) == 2:
-        return {'text': f'Вы находитесь на {out[0].number} этаже, {out[1].name}', 'ref': out[0].dict()}
+        return {'text': f'{out[0].number} этаж, {out[1].name}', 'ref': out[0].dict()}
 
     if len(out) == 3:
-        return {'text': f'Вы находитесь в зале {id} ({out[0].name}), на {out[1].number} этаже',
+        return {'text': f'Зал {id} ({out[0].name}), на {out[1].number} этаже, {out[2].name}',
                 'ref': out[0]._asdict()}
 
 

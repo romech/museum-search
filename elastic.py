@@ -100,6 +100,7 @@ def sample_search(text='картины Пискассо'):
 
 
 if __name__ == '__main__':
-    print(len(search_buildings('главное здание')))
-
+    print(sample_search())
+    # print(len(search_buildings('главное здание')))
+    # index_things()
 
