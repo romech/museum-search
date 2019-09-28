@@ -1,9 +1,12 @@
+import random
+
 from flask import Flask, request, abort, jsonify
 
 import elastic
 from data_store import buildings
-
+import qa
 from utils import normalize_coord
+
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -80,6 +83,17 @@ def find_event():
         resp['coords'] = coords
         return jsonify(resp)
     abort(404)
+
+
+@app.route('/qa')
+def question_answering():
+    question = request.args["query"]
+
+    answer = qa.get_answer(question)
+    if answer:
+        return answer
+    else:
+        return ''
 
 
 if __name__ == '__main__':
