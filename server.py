@@ -17,6 +17,8 @@ def search():
 
     if entity == 'object':
         return jsonify(elastic.search_objects(query))
+    elif entity == 'building':
+        return jsonify(elastic.search_buildings(query))
     else:
         return abort(401)
 

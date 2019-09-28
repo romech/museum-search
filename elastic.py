@@ -85,8 +85,13 @@ def search_objects(query):
     return search(query, index='objects', fields=('seakeys', 'author', 'text'))
 
 
+def search_buildings(query):
+    return search(query, index='buildings', fields=('name', 'brief'))
+
+
 def index_things():
     upload_file('/home/roman/Downloads/MuseumData/objects.json', index='objects', doc='object', fn=normalize_objects)
+    upload_file('/home/roman/Downloads/MuseumData/buildings.json', index='buildings', doc='building', fn=normalize_building)
 
 
 def sample_search(text='картины Пискассо'):
@@ -95,6 +100,6 @@ def sample_search(text='картины Пискассо'):
 
 
 if __name__ == '__main__':
-    # sample_search()
-    upload_file('/home/roman/Downloads/MuseumData/buildings.json', index='bld_tst', doc='building', fn=normalize_building)
+    print(len(search_buildings('главное здание')))
+
 
