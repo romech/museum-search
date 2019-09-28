@@ -61,8 +61,9 @@ def normalize_building(content):
         'path': maybe_get(content, 'path')
     }
 
-def as_Q(field, query):
-    return dsl.Q('match', **{field: {'query': query, 'fuzziness': 1}})
+
+def as_Q(field, query, fuzziness=1):
+    return dsl.Q('match', **{field: {'query': query, 'fuzziness': fuzziness}})
 
 
 def hit_to_dict(hit):
@@ -71,22 +72,29 @@ def hit_to_dict(hit):
     return d
 
 
-def search(query, index='objects', fields=('seakeys', 'author', 'text')):
-    q = reduce(lambda a, b: a | b,
-               [as_Q(field, query) for field in fields])
-    s = dsl.Search(using=client, index=index).query(q)
-    res = s.execute()
-    res_dict = [hit_to_dict(hit) for hit in res]
-
-    return res_dict
+def search(query, index='objects', fields=('name', 'author', 'seakeys', 'text')):
+    print('query:', query)
+    s = dsl.Search(using=client, index=index)
+    for fuzziness in range(2):
+        for field in fields:
+            res = s.query(as_Q(field, query, fuzziness=fuzziness)).execute()
+            if res:
+                return [hit_to_dict(hit) for hit in res]
+        # q = reduce(lambda a, b: a | b,
+        #            [as_Q(field, query) for field in fields])
+        # s = dsl.Search(using=client, index=index).query(q)
+        # res = s.query(q).execute()
+        # if res:
+        #     return [hit_to_dict(hit) for hit in res]
+    return []
 
 
 def search_objects(query):
-    return search(query, index='objects', fields=('seakeys', 'author', 'text'))
+    return search(query, index='objects', fields=('name', 'author', 'seakeys', 'text'))
 
 
 def search_buildings(query):
-    return search(query, index='buildings', fields=('name', 'brief'))
+    return search(query, index='buildings', fields=('name', 'brief', 'address'))
 
 
 def index_things():

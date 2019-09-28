@@ -47,12 +47,19 @@ def where_is_it():
         id = hall_id or bld_id
         if not id:
             continue
-        loc = buildings.find_human_readable(id)
-        if not loc:
+        res = buildings.find_human_readable(id)
+        if not res:
             continue
 
-        loc['text'] = obj['name'] + '\n' + loc['text']
-        return jsonify(loc)
+        res['text'] = f'{obj["name"]}. {res["text"]}'
+        if obj['author']:
+            res['text'] = f'{obj["author"]}, {res["text"]}'
+        res['img'] = obj['img']
+        res['object'] = obj
+        res['building'] = buildings.find_building(bld_id).dict()
+        if 'coords' in res['building']:
+            res['coords'] = res['building']['coords']
+        return jsonify(res)
 
 
 if __name__ == '__main__':
