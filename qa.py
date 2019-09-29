@@ -53,7 +53,7 @@ def find_context_in(question, index):
 def find_context(question):
     candidates = []
     # for index in ['various', 'events']:
-    for index in ['various', 'events', 'objects']:
+    for index in ['wiki', 'various', 'events', 'objects']:
         candidates += find_context_in(question, index)[:2]
     if not candidates:
         return [], 0
@@ -80,5 +80,5 @@ def get_answer(q, verbose=False):
 
 
 if __name__ == '__main__':
-    q = "Что посмотреть в мастерской Штейнберга?"
+    q = "Где посмотреть картины Айвазовского?"
     print(get_answer(q, verbose=True))
