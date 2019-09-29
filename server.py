@@ -93,7 +93,7 @@ def question_answering():
     if answer:
         return answer
     else:
-        return ''
+        return 'Не могу найти ответа'
 
 
 if __name__ == '__main__':
