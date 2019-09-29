@@ -16,9 +16,12 @@ def qa_multiple(knowledge, question, ttl=4):
     start = time.time()
     res = []
     for k in knowledge:
-        res.append(qa(k, question))
-        print(qa(k, question))
-        if time.time() + 1.2 > start + ttl:
+        ans = qa(k, question)
+        print(ans)
+        if ans[-1]:
+            res.append(ans)
+
+        if any(r[-1] for r in res) and time.time() + 1.2 > start + ttl:
             break
     return sorted(res, reverse=True)
     # return resp.content.decode(encoding='unicode-escape')
@@ -45,7 +48,7 @@ def find_context_in(question, index):
     resp = requests.get(f'http://demo6.charlie.vkhackathon.com:9200/{index}/_search', data=query, headers=headers).json()
     # pprint(resp.json()['hits']['hits'])
     highlights = ['\n'.join(h['highlight']['text']) for h in resp['hits']['hits']]
-    pprint(resp['hits'])
+    # pprint(resp['hits'])
     scores = [h['_score'] for h in resp['hits']['hits']]
     return list(zip(scores, highlights))
 
@@ -54,7 +57,7 @@ def find_context(question):
     candidates = []
     # for index in ['various', 'events']:
     for index in ['wiki', 'various', 'events', 'objects']:
-        candidates += find_context_in(question, index)[:2]
+        candidates += find_context_in(question, index)[:3]
     if not candidates:
         return [], 0
 
@@ -80,5 +83,5 @@ def get_answer(q, verbose=False):
 
 
 if __name__ == '__main__':
-    q = "Где посмотреть картины Айвазовского?"
+    q = "Кто написал картину девушка с жемчужной сережкой?"
     print(get_answer(q, verbose=True))
